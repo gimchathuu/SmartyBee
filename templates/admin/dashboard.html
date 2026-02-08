@@ -1,0 +1,135 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Admin Dashboard</h1>
+    <p style="color: #64748b; margin-top: 5px;">Welcome back, {{ session.get('admin_name') }}! Overview of SmartyBee's
+        performance.</p>
+</div>
+
+<!-- Key Metrics Grid -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <!-- Stat Card 1 -->
+    <div class="glass-card" style="display: flex; align-items: center; gap: 20px;">
+        <div
+            style="width: 60px; height: 60px; background: rgba(59, 130, 246, 0.1); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+            <i class="fas fa-user-shield" style="font-size: 1.5rem;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Guardians</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #1e293b;">{{ stats.guardians }}</div>
+        </div>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="glass-card" style="display: flex; align-items: center; gap: 20px;">
+        <div
+            style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #10b981;">
+            <i class="fas fa-graduation-cap" style="font-size: 1.5rem;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Total Children</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #1e293b;">{{ stats.children }}</div>
+        </div>
+    </div>
+
+    <!-- Stat Card 3 -->
+    <div class="glass-card" style="display: flex; align-items: center; gap: 20px;">
+        <div
+            style="width: 60px; height: 60px; background: rgba(245, 158, 11, 0.1); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+            <i class="fas fa-star" style="font-size: 1.5rem;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Active Learners</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: #1e293b;">{{ stats.active_learners }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+
+    <!-- Live Learning Feed -->
+    <div class="glass-card">
+        <h3
+            style="font-family: 'Fredoka', sans-serif; font-size: 1.2rem; margin-bottom: 20px; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-satellite-dish" style="color: #f59e0b;"></i> Live Learning Feed
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            {% for activity in recent_activity %}
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #3b82f6; font-size: 1.2rem;">
+                        {{ activity.SinhalaChar }}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #334155;">{{ activity.ChildName }}</div>
+                        <div style="font-size: 0.8rem; color: #94a3b8;">practiced a letter</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #f59e0b; font-weight: 700; font-size: 0.9rem;">
+                        {{ activity.StarsEarned }} <i class="fas fa-star" style="font-size: 0.7rem;"></i>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #cbd5e1;">
+                        {{ activity.PlayedAt.strftime('%H:%M') if activity.PlayedAt else 'Just now' }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not recent_activity %}
+            <div style="text-align: center; color: #94a3b8; padding: 20px;">No recent activity</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: New Users & Quick Actions -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+        <!-- New Arrivals -->
+        <div class="glass-card">
+            <h3 style="font-family: 'Fredoka', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b;">
+                New Arrivals
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for g in recent_guardians %}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div
+                        style="width: 30px; height: 30px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.9rem; font-weight: 600; color: #475569;">{{ g.Username }}</div>
+                        <div style="font-size: 0.75rem; color: #94a3b8;">Guardian Joined</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass-card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">
+            <h3 style="font-family: 'Fredoka', sans-serif; font-size: 1.1rem; margin-bottom: 15px;">
+                Quick Actions
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="{{ url_for('manage_letters') }}" class="btn"
+                    style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); justify-content: center;">
+                    <i class="fas fa-plus-circle"></i> Add Content
+                </a>
+                <a href="{{ url_for('view_feedback') }}" class="btn"
+                    style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); justify-content: center;">
+                    <i class="fas fa-inbox"></i> Check Inbox
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - Loading...</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="loading-page-body">
+    <div class="loading-container">
+        <div class="sky-background">
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+        </div>
+
+        <div class="loader-content entrance-anim">
+            <div class="bee-mascot-huge">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" class="bouncing-bee">
+            </div>
+            <h1 class="loading-text">Getting things ready...</h1>
+            <div class="loading-bar-container">
+                <div class="loading-bar-fill"></div>
+            </div>
+            <p class="loading-subtext">Waking up the bees! 🐝</p>
+        </div>
+    </div>
+
+    <script>
+        // Simulate initialization of resources
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.querySelector('.loading-bar-fill');
+
+            // Animate progress bar
+            setTimeout(() => { progressBar.style.width = "40%"; }, 500);
+            setTimeout(() => { progressBar.style.width = "75%"; }, 1500);
+            setTimeout(() => { progressBar.style.width = "100%"; }, 2500);
+
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = "/select-role";
+            }, 3000);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - Student Dashboard</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Poppins:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Gemunu+Libre:wght@400;700;800&family=Fredoka:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* --- General Page Styles --- */
+        body {
+            overflow-y: auto;
+            background: #fffbf0;
+            /* Light Cream Background */
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* --- Navigation Styles --- */
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4a4a4a;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffc107;
+            /* Bee Yellow */
+        }
+
+        .btn-logout {
+            background-color: #ff6b6b;
+            /* Soft Red for Logout */
+            color: white !important;
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            background-color: #fa5252;
+        }
+
+        /* --- Hero Section & Floating Cards --- */
+        .hero-image {
+            position: relative;
+            /* Ensure the image container is the reference point for absolute cards */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+
+
+        .card-icon-box {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .card-text {
+            display: flex;
+            flex-direction: column;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            /* Sinhala Font */
+        }
+
+        .card-text strong {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .card-text small {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* --- Container for Horizontal Layout --- */
+        .stats-button-container {
+            display: flex;
+            /* Makes them sit side-by-side */
+            flex-direction: row;
+            /* Horizontal alignment */
+            gap: 20px;
+            /* Space between the two buttons */
+            justify-content: center;
+            /* Centers them (optional) */
+            margin-top: 20px;
+            /* Spacing from whatever is above */
+        }
+
+        /* --- The Button Styling --- */
+        .stat-btn {
+            display: flex;
+            /* Aligns icon and text inside the button */
+            align-items: center;
+            /* Vertically centers items */
+            gap: 12px;
+            /* Space between icon and text */
+
+            background-color: white;
+            padding: 10px 20px;
+            /* Size of the button */
+            border-radius: 50px;
+            /* Makes it pill-shaped (Round) */
+
+            text-decoration: none;
+            /* Removes underline from links */
+            color: inherit;
+            /* Keeps text color natural */
+
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            /* Soft shadow */
+            border: 2px solid transparent;
+            /* Prepare for border on hover */
+            transition: all 0.3s ease;
+            /* Smooth animation */
+            cursor: pointer;
+        }
+
+        /* --- Hover Effect (Animation) --- */
+        .stat-btn:hover {
+            transform: translateY(-5px);
+            /* Moves up slightly */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            /* Shadow grows */
+            border-color: #ffc107;
+            /* Optional: Yellow border on hover */
+        }
+
+        /* --- Icon Box Styling --- */
+        .card-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            /* Prevents icon from squishing */
+        }
+
+        /* --- Text Styling --- */
+        .card-text {
+            display: flex;
+            flex-direction: column;
+            /* Stacks the strong and small text */
+            text-align: left;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            line-height: 1.2;
+        }
+
+        .card-text strong {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .card-text small {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Mobile: Stack them vertically on small screens */
+        @media (max-width: 600px) {
+            .stats-button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stat-btn {
+                width: 100%;
+                /* Full width on mobile */
+                max-width: 300px;
+            }
+        }
+
+        /* Positioning the Cards around the Hero Image */
+        .card-level {
+            top: 20%;
+            left: -5%;
+            animation-delay: 0s;
+        }
+
+        .card-stars {
+            bottom: 25%;
+            right: -5%;
+            animation-delay: 1.5s;
+        }
+
+        /* Mobile Responsiveness for Cards */
+        @media (max-width: 768px) {
+            .card-level {
+                left: 0;
+                top: 10%;
+            }
+
+            .card-stars {
+                right: 0;
+                bottom: 10%;
+            }
+        }
+
+        /* --- Bee Floating Animation --- */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .floating-bee {
+            animation: float 3s ease-in-out infinite;
+            width: 300px;
+        }
+    </style>
+</head>
+
+<body class="landing-page">
+
+    <nav class="landing-nav">
+        <div class="nav-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee Logo" width="150px"
+                height="auto">
+        </div>
+        <div class="nav-links">
+            <a href="/learn"><i class="fas fa-book-open"></i> Learn</a>
+            <a href="/profile"><i class="fas fa-user-circle"></i> Profile</a>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <div class="hero-content">
+            <div class="badge-pill"><i class="fas fa-star"></i> Welcome Back!</div>
+            <h1 style="font-family: 'Gemunu Libre', sans-serif;">
+                ආයුබෝවන් <br> පුංචි මිතුරා!
+            </h1>
+
+            <div class="stats-button-container">
+
+                <a href="#" class="stat-btn">
+                    <div class="card-icon-box" style="background-color: #e1f5fe; color: #0288d1;">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="card-text">
+                        <strong>Level {{ child_level }}</strong>
+                        <small>Keep Learning!</small>
+                    </div>
+                </a>
+
+                <a href="#" class="stat-btn">
+                    <div class="card-icon-box" style="background-color: #fff8e1; color: #ffc107;">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="card-text">
+                        <strong>Stars</strong>
+                        <small>{{ total_stars }} Stars Collected</small>
+                    </div>
+                </a>
+
+            </div>
+            <p class="hero-subtext">
+                Ready to learn some new letters today? Let's write in the air!
+            </p>
+            <div class="hero-buttons">
+                <a href="/dashboard" class="btn-cta-primary"><i class="fas fa-play"></i> Let's Play</a>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <div class="circle-bg">
+                <img src="{{ url_for('static', filename='images/bee.png') }}" alt="Bee Mascot Main" class="floating-bee"
+                    style="position: relative; z-index: 10; width: 500px;">
+
+
+
+            </div>
+        </div>
+    </header>
+
+</body>
+
+</html>

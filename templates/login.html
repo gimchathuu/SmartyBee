@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - Login</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="login-page">
+
+    <!-- ================= LOADING SCREEN ================= -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" class="pulsing-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- ================= LOGIN CARD ================= -->
+    <div class="login-container">
+        <div class="login-card bounce-in">
+
+            <div class="logo-section">
+                <!-- Using logo from static if available -->
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Bee" class="static-logo"
+                    width="500px">
+            </div>
+
+            <h1>Welcome to <span class="highlight-text">SmartyBee</span></h1>
+            <p>Sign in to continue your learning adventure!</p>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+
+                <!-- USERNAME (Text Input instead of Email) -->
+                <div class="input-group">
+                    <label for="username"><i class="far fa-envelope"></i> Username</label>
+
+                    <input type="text" id="username" placeholder="your username" required autocomplete="off">
+                </div>
+
+                <!-- PASSWORD -->
+                <div class="input-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" placeholder="........" required>
+                        <i class="far fa-eye toggle-password" onclick="togglePassword()"></i>
+                    </div>
+                </div>
+
+                <!-- LOGIN BUTTON -->
+                <button type="submit" class="btn-cta-primary full-width">
+                    <center>
+                        Let’s Go!
+                    </center>
+                </button>
+
+                <!-- Divider -->
+                <div class="divider">
+                    Don't have an account?
+                </div>
+
+                <!-- Signup Options -->
+                <div class="signup-options">
+                    <a href="{{ url_for('guardian_signup') }}" class="signup-btn">
+                        <i class="fas fa-user-plus"></i> Guardian Signup
+                    </a>
+
+                </div>
+            </form>
+
+
+            <p id="error-msg" class="error-text" style="margin-top: 15px; margin-bottom: 0;"></p>
+
+        </div>
+    </div>
+
+    <!-- ================= SCRIPT ================= -->
+    <script>
+        /* ---------- LOADING SCREEN ---------- */
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loading-screen");
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => loader.style.display = "none", 500);
+            }, 1000);
+        });
+
+        /* ---------- PASSWORD TOGGLE ---------- */
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.querySelector('.toggle-password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        /* ---------- LOGIN HANDLER ---------- */
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const errorMsg = document.getElementById("error-msg");
+
+            errorMsg.innerText = "";
+
+            if (!username || !password) {
+                errorMsg.innerText = "Please enter both username and password!";
+                return;
+            }
+
+            try {
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // localStorage.setItem("smartyUser", username); // Not used anymore for auth, but maybe for greeting if we wanted client-side persist
+                    window.location.href = result.redirect_url || "/guardian-dashboard";
+                } else {
+                    errorMsg.innerText = "Wrong username or password 😢";
+                }
+
+            } catch (error) {
+                errorMsg.innerText = "Server error. Please try again!";
+            }
+        }
+    </script>
+
+</body>
+
+</html>

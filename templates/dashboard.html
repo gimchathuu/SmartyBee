@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - World of Letters</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --font-main: 'Fredoka', 'Noto Sans Sinhala', sans-serif;
+            --primary-orange: #f59e0b;
+            --bg-gray: #f9fafb;
+            --border-color: #e5e7eb;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --card-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100%;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: #fff7ed;
+            color: var(--primary-orange);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ef4444;
+        }
+
+        .logout-btn:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .profile-bubble {
+            width: 45px;
+            height: 45px;
+            background: #ffedd5;
+            color: var(--primary-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-info h3 {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .icon-level {
+            background-color: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .icon-star {
+            background-color: #fffbeb;
+            color: #f59e0b;
+        }
+
+        .content-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 32px;
+            min-height: 400px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .action-btn {
+            background-color: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.02);
+            background-color: #d97706;
+        }
+
+        .level-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .level-tile {
+            width: 100px;
+            height: 100px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .level-tile.completed {
+            background-color: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #059669;
+        }
+
+        .level-tile.unlocked {
+            background-color: #fff7ed;
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            transform: scale(1.05);
+        }
+
+        .level-tile.locked {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .char {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stars-mini {
+            font-size: 0.6rem;
+            letter-spacing: -2px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 15px;
+            }
+
+            .logo-area {
+                margin-bottom: 15px;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 5px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <span style="font-size: 1.8rem;">🐝</span>
+                SmartyBee
+            </div>
+
+            <nav class="nav-menu">
+                <a href="/learn" class="nav-item active">
+                    <i class="fas fa-book-open"></i>
+                    Learn </a>
+                <a href="/profile" class="nav-item">
+                    <i class="fas fa-user-circle"></i>
+                    My Profile </a>
+
+                <div style="flex-grow: 1;"></div>
+
+                <a href="/logout" class="nav-item logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="welcome-text">
+                    <h1 id="greeting">Welcome! 👋</h1>
+                    <p>It's another day to learn some letters.</p>
+                </div>
+                <div class="profile-bubble">U</div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>My Progress</h3>
+                        <div class="stat-value">3</div>
+                    </div>
+                    <div class="stat-icon icon-level">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Stars Collected</h3>
+                        <div class="stat-value" id="star-count-display">12</div>
+                    </div>
+                    <div class="stat-icon icon-star">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="section-header">
+                    <div class="section-title">Letter Map</div>
+                    <button class="action-btn" onclick="startGame()">
+                        <i class="fas fa-play"></i> Let's Start
+                    </button>
+                </div>
+
+                <div class="level-grid">
+                    <div class="level-tile completed" onclick="playLevel(1)">
+                        <span class="char">අ</span>
+                        <div class="stars-mini">⭐⭐⭐</div>
+                    </div>
+
+                    <div class="level-tile completed" onclick="playLevel(2)">
+                        <span class="char">ආ</span>
+                        <div class="stars-mini">⭐⭐</div>
+                    </div>
+
+                    <div class="level-tile unlocked" onclick="playLevel(3)">
+                        <span class="char">ඇ</span>
+                        <i class="fas fa-lock-open" style="font-size: 0.8rem; margin-top: 5px;"></i>
+                    </div>
+
+                    <div class="level-tile locked">
+                        <i class="fas fa-lock" style="margin-bottom: 5px;"></i>
+                        <span class="char" style="opacity: 0.5;">ඈ</span>
+                    </div>
+
+                    <div class="level-tile locked">
+                        <i class="fas fa-lock" style="margin-bottom: 5px;"></i>
+                        <span class="char" style="opacity: 0.5;">ඉ</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = localStorage.getItem('smartyUser') || 'Little Friend';
+            document.getElementById('greeting').innerText = `Welcome, ${user}! 👋`;
+
+            const stars = localStorage.getItem('smartyStars') || 12;
+            document.getElementById('star-count-display').innerText = stars;
+        });
+
+        function startGame() {
+            window.location.href = '/write/3';
+        }
+
+        function playLevel(id) {
+            window.location.href = `/write/${id}`;
+        }
+    </script>
+</body>
+
+</html>

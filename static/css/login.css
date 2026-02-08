@@ -1,0 +1,166 @@
+/* --- Login Page --- */
+.login-page {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFD54F 100%);
+    /* Soft Yellow Gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.login-card {
+    background: #FFFFFF;
+    padding: 40px 40px 50px 40px;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(255, 193, 7, 0.2);
+    /* Yellowish shadow */
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.logo-section {
+    margin-bottom: 20px;
+}
+
+.static-logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.brand-title {
+    background-color: #FFC107;
+    /* Orange/Yellow box */
+    color: black;
+    font-weight: 800;
+    font-size: 1.8rem;
+    padding: 5px 15px;
+    display: inline-block;
+    border-radius: 5px;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+/* Typography */
+.login-card h1 {
+    color: #333;
+    font-size: 1.8rem;
+    margin: 10px 0 5px 0;
+    font-weight: 700;
+}
+
+.highlight-text {
+    color: #FFA000;
+    /* Amber */
+}
+
+.login-card p {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 30px;
+}
+
+/* Inputs */
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.input-group label i {
+    margin-right: 5px;
+    color: #555;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid #eee;
+    background-color: #fcfcfc;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Fredoka', sans-serif;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #FFC107;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+    outline: none;
+}
+
+.password-container {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    cursor: pointer;
+}
+
+/* CTA Button */
+.btn-cta-primary {
+    background: linear-gradient(to right, #FFC107, #FF9800);
+    color: #222;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 15px;
+    border-radius: 50px;
+    /* Pill shape */
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    width: 100%;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+}
+
+.btn-cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+}
+
+.footer-link {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.footer-link a {
+    color: #FFA000;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.footer-link a:hover {
+    text-decoration: underline;
+}
+
+/* Loader Base Styles (if needed/overridden from style.css) */
+#loading-screen {
+    /* Assuming style.css handles layout, just ensure colors match if override needed */
+    background: #FFF8E1;
+}

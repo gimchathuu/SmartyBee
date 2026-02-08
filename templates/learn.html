@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - අකුරු ඉගෙන ගනිමු</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFD54F 100%);
+            min-height: 100vh;
+            height: auto;
+            /* Override style.css */
+            overflow-y: auto;
+            /* Allow scrolling */
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .learn-container {
+            width: 100%;
+            max-width: 1200px;
+            /* Increased max-width */
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            background: white;
+            border: 2px solid #FFC107;
+            color: #FF9800;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.1);
+        }
+
+        .back-btn:hover {
+            background: #FFF8E1;
+            transform: translateX(-5px);
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 24px;
+            /* Increased gap */
+            margin-top: 30px;
+            justify-content: center;
+            /* Center items */
+            padding-bottom: 40px;
+        }
+
+        .letter-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .letter-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 193, 7, 0.2);
+            border-color: #FFC107;
+        }
+
+        .letter-card.easy {
+            background-color: #E3F2FD;
+        }
+
+        .letter-card.medium {
+            background-color: #F1F8E9;
+        }
+
+        .letter-card.hard {
+            background-color: #FFF3E0;
+        }
+
+        .char-display {
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .letter-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            width: 100%;
+        }
+
+        @media (max-width: 600px) {
+            .alphabet-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 15px;
+            }
+
+            .char-display {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= LOADING SCREEN ================= -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" class="pulsing-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div class="learn-container">
+        <nav class="landing-nav">
+            <div class="nav-logo">
+                <a href="/dashboard"
+                    style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee Logo" width="120px"
+                        height="auto">
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="/learn" style="color: #ffc107;"><i class="fas fa-book-open"></i> Learn</a>
+                <a href="/profile"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </nav>
+
+        <div style="margin-bottom: 20px;">
+            <a href="/home" class="back-btn" style="position: static;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="login-card bounce-in" style="max-width: 100%; padding: 40px;">
+            <h1 style="margin-bottom: 10px;">අකුරු <span class="highlight-text">ඉගෙන ගනිමු</span></h1>
+            <p>ඔයා කැමති අකුරක් තෝරාගන්න! 🌟</p>
+
+            <div id="alphabet-grid" class="alphabet-grid">
+                <!-- Letters will be loaded here -->
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ---------- LOADING SCREEN ---------- */
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loading-screen");
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => loader.style.display = "none", 500);
+            }, 1000);
+        });
+
+        /* ---------- LOAD ALPHABET ---------- */
+        async function loadAlphabet() {
+            const grid = document.getElementById('alphabet-grid');
+
+            try {
+                const response = await fetch('/api/letters');
+                const data = await response.json();
+
+                if (data.success) {
+                    grid.innerHTML = '';
+                    data.letters.forEach(letter => {
+                        const card = document.createElement('a');
+                        card.href = `/learn/${letter.LetterID}`;
+                        card.className = `letter-card ${letter.DifficultyLevel.toLowerCase()}`;
+
+                        card.innerHTML = `
+                            <div class="char-display">${letter.SinhalaChar}</div>
+                            <div class="letter-label">${letter.DifficultyLevel}</div>
+                        `;
+
+                        grid.appendChild(card);
+                    });
+                } else {
+                    grid.innerHTML = '<p>අකුරු ලබා ගැනීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading alphabet:', error);
+                grid.innerHTML = '<p>සර්වර් දෝෂයකි. කරුණාකර නැවත උත්සාහ කරන්න.</p>';
+            }
+        }
+
+        loadAlphabet();
+    </script>
+</body>
+
+</html>

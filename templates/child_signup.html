@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - Child Signup</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="login-page child-theme">
+
+    <!-- ================= LOADING SCREEN ================= -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" class="pulsing-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- ================= SIGNUP CARD ================= -->
+    <div class="login-container">
+        <div class="login-card bounce-in child-card-style">
+
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Bee" class="static-logo"
+                    width="500px">
+            </div>
+
+            <h1>Join the <span class="highlight-text-child">Bee Family!</span> 🐝</h1>
+            <p>Create your account and start learning! 🌟</p>
+
+            <form id="signup-form" onsubmit="handleSignup(event)">
+
+                <!-- USERNAME -->
+                <div class="input-group">
+                    <label for="username"><i class="fas fa-user-circle"></i> Username</label>
+                    <input type="text" id="username" placeholder="Pick a cool username" required autocomplete="off">
+                </div>
+
+                <!-- CHILD NAME -->
+                <div class="input-group">
+                    <label for="childname"><i class="fas fa-child"></i> Your Name</label>
+                    <input type="text" id="childname" placeholder="What's your name?" required autocomplete="off">
+                </div>
+
+                <!-- AGE -->
+                <div class="input-group">
+                    <label for="age"><i class="fas fa-birthday-cake"></i> Age</label>
+                    <input type="number" id="age" placeholder="How old are you?" required min="3" max="12">
+                </div>
+
+                <!-- PASSWORD -->
+                <div class="input-group">
+                    <label for="password"><i class="fas fa-key"></i> Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" placeholder="........" required>
+                        <i class="far fa-eye toggle-password" onclick="togglePassword('password')"></i>
+                    </div>
+                </div>
+
+                <!-- CONFIRM PASSWORD -->
+                <div class="input-group">
+                    <label for="confirm-password"><i class="fas fa-key"></i> Confirm Password</label>
+                    <div class="password-container">
+                        <input type="password" id="confirm-password" placeholder="........" required>
+                        <i class="far fa-eye toggle-password" onclick="togglePassword('confirm-password')"></i>
+                    </div>
+                </div>
+
+                <!-- SIGNUP BUTTON -->
+                <button type="submit" class="btn-cta-primary full-width child-btn">
+                    Let's Start Learning! 🚀
+                </button>
+
+            </form>
+
+            <p style="margin-top: 15px; text-align: center;">
+                Already have an account?
+                <a href="{{ url_for('child_login') }}" style="color: #fdcb6e; font-weight: bold;">Login here</a>
+            </p>
+
+            <p id="error-msg" class="error-text" style="margin-top: 15px; margin-bottom: 0;"></p>
+            <p id="success-msg" class="success-text" style="margin-top: 15px; margin-bottom: 0; color: #00b894;"></p>
+
+        </div>
+    </div>
+
+    <!-- ================= SCRIPT ================= -->
+    <script>
+        /* ---------- LOADING SCREEN ---------- */
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loading-screen");
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => loader.style.display = "none", 500);
+            }, 1000);
+        });
+
+        /* ---------- PASSWORD TOGGLE ---------- */
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const icon = passwordInput.nextElementSibling;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        /* ---------- SIGNUP HANDLER ---------- */
+        async function handleSignup(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value.trim();
+            const childname = document.getElementById("childname").value.trim();
+            const age = parseInt(document.getElementById("age").value);
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirm-password").value.trim();
+            const errorMsg = document.getElementById("error-msg");
+            const successMsg = document.getElementById("success-msg");
+
+            errorMsg.innerText = "";
+            successMsg.innerText = "";
+
+            // Validation
+            if (!username || !childname || !age || !password || !confirmPassword) {
+                errorMsg.innerText = "Please fill in all fields!";
+                return;
+            }
+
+            if (age < 3 || age > 12) {
+                errorMsg.innerText = "Age must be between 3 and 12!";
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errorMsg.innerText = "Passwords do not match!";
+                return;
+            }
+
+            if (password.length < 3) {
+                errorMsg.innerText = "Password must be at least 3 characters!";
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/child-signup", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        childname: childname,
+                        age: age,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successMsg.innerText = "🎉 Account created! Taking you to login...";
+                    setTimeout(() => {
+                        window.location.href = "/child-login";
+                    }, 2000);
+                } else {
+                    errorMsg.innerText = result.message || "Registration failed!";
+                }
+
+            } catch (error) {
+                errorMsg.innerText = "Server error. Please try again!";
+            }
+        }
+    </script>
+
+</body>
+
+</html>

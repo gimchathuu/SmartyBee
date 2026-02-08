@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - SmartyBee</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --font-main: 'Noto Sans Sinhala', 'Fredoka', sans-serif;
+            --primary-orange: #f59e0b;
+            --bg-gray: #f3f4f6;
+            --text-dark: #111827;
+            --card-white: #ffffff;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-gray);
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-orange);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #d97706;
+        }
+
+        .avatar-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-orange);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="brand">🐝 My Profile</div>
+        <div>
+            <a href="#" onclick="window.history.back(); return false;"
+                style="text-decoration: none; color: #4b5563; margin-right: 20px;">Back</a>
+            <a href="/logout" style="text-decoration: none; color: #ef4444;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Profile Picture -->
+        <div class="settings-card">
+            <h2>Profile Picture</h2>
+            <div class="avatar-section">
+                <img src="{{ url_for('static', filename='uploads/avatars/' + avatar) if avatar else 'https://via.placeholder.com/100' }}"
+                    class="avatar-preview" id="preview">
+                <div>
+                    <input type="file" id="avatarInput" accept="image/*" style="margin-bottom: 10px;">
+                    <button class="btn btn-primary" onclick="uploadAvatar()">Upload New Picture</button>
+                    <p id="uploadMsg" style="margin-top: 5px; font-size: 0.9rem;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="settings-card">
+            <h2>My Information</h2>
+            <div class="form-group">
+                <label>My Name</label>
+                <input type="text" id="displayName" value="{{ name }}">
+            </div>
+            <div class="form-group">
+                <label>Username (Login Name)</label>
+                <input type="text" id="username" value="{{ username }}">
+            </div>
+            <button class="btn btn-primary" onclick="updateProfile()">Save Changes</button>
+        </div>
+
+        <!-- Security -->
+        <div class="settings-card">
+            <h2>Change Password</h2>
+            <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="oldPass">
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="newPass">
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+        </div>
+
+    </div>
+
+    <script>
+        async function updateProfile() {
+            const name = document.getElementById('displayName').value;
+            const username = document.getElementById('username').value;
+
+            const res = await fetch('/api/update-child-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, username })
+            });
+            const data = await res.json();
+            alert(data.message || (data.success ? "Profile Updated!" : "Error"));
+            if (data.success) location.reload();
+        }
+
+        async function changePassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+
+            const res = await fetch('/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old_password: oldPass, new_password: newPass })
+            });
+            const data = await res.json();
+            alert(data.message || (data.success ? "Password Updated!" : "Error"));
+            if (data.success) {
+                document.getElementById('oldPass').value = '';
+                document.getElementById('newPass').value = '';
+            }
+        }
+
+        async function uploadAvatar() {
+            const fileInput = document.getElementById('avatarInput');
+            if (fileInput.files.length === 0) { alert("Select a file first!"); return; }
+
+            const formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+
+            const res = await fetch('/api/upload-avatar', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            document.getElementById('uploadMsg').innerText = data.message;
+            if (data.success) location.reload();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - Writing Game</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- MediaPipe Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --font-main: 'Noto Sans Sinhala', 'Fredoka', sans-serif;
+            --primary-orange: #f59e0b;
+            --bg-gray: #f9fafb;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --card-radius: 16px;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .game-header {
+            background: white;
+            padding: 15px 30px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: #f3f4f6;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .game-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* MAIN GAME AREA */
+        .game-container {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 70px);
+        }
+
+        /* CARD STYLES */
+        .game-card {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* LEFT: VIDEO */
+        .video-section {
+            flex: 2;
+            position: relative;
+            overflow: hidden;
+            background: black;
+            border-radius: var(--card-radius);
+        }
+
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #input_video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        #output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        .gesture-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .gesture-hint.active {
+            background: rgba(245, 158, 11, 0.9);
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        /* RIGHT: TARGET & CONTROLS */
+        .controls-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .target-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: #fffbeb;
+            /* Light yellow bg for letter */
+            border-radius: 12px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .huge-char {
+            font-size: 8rem;
+            color: var(--text-dark);
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ghost-template {
+            position: absolute;
+            opacity: 0.1;
+            width: 80%;
+            height: auto;
+        }
+
+        /* SCORE BOARD */
+        .score-board {
+            width: 100%;
+            background: #fdf2f8;
+            /* Pink tint */
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            color: #db2777;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #be185d;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #db2777;
+            width: 0%;
+            /* Dynamic */
+            transition: width 0.3s ease;
+        }
+
+        /* BUTTONS */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: transform 0.1s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-clear {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-submit {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* INSTRUCTIONS MODAL */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .step-list {
+            text-align: left;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-orange);
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .start-btn {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .start-btn:hover {
+            background: #d97706;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="game-header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="game-title">Writing Practice: <span style="color: var(--primary-orange);">{{ letter_char
+                    }}</span></div>
+        </div>
+        <div style="font-weight: 600; color: var(--text-light);">
+            <i class="fas fa-video"></i> Camera On
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="game-container">
+
+        <!-- VIDEO AREA -->
+        <div class="video-section">
+            <div class="video-wrapper">
+                <video id="input_video" autoplay playsinline></video>
+                <canvas id="output_canvas"></canvas>
+                <div id="gesture-indicator" class="gesture-hint">
+                    <i class="fas fa-hand-pointer"></i>
+                    <span>Pinch thumb & index finger to draw!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS AREA -->
+        <div class="game-card controls-section">
+
+            <div class="target-display">
+                <div style="font-size: 0.9rem; color: #9ca3af; margin-bottom: 10px;">Trace this letter</div>
+                <!-- Optional Ghost Image -->
+                <img id="target-letter-img" src="" alt="" class="ghost-template">
+                <h1 id="target-char" class="huge-char">{{ letter_char }}</h1>
+            </div>
+
+            <div class="score-board">
+                <div class="score-label">ACCURACY SCORE</div>
+                <div class="score-value" id="live-score">0%</div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="accuracy-bar"></div>
+                </div>
+                <p id="status-text" style="font-size: 0.85rem; color: #6b7280; margin-top: 8px;">Start writing...</p>
+            </div>
+
+            <div class="btn-group">
+                <button id="clear-btn" class="action-btn btn-clear">
+                    <i class="fas fa-trash-alt"></i> Clear
+                </button>
+                <button id="submit-btn" class="action-btn btn-submit">
+                    <i class="fas fa-check-circle"></i> Submit
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- HOW TO PLAY MODAL -->
+    <div id="instruction-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: var(--text-dark); margin-bottom: 10px;">How to Play 🎮</h2>
+            <p style="color: var(--text-light);">Follow these simple steps to learn writing!</p>
+
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-icon"><i class="fas fa-hand-paper"></i></div>
+                    <div>Show your hand to the camera</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon"><i class="fas fa-compress-arrows-alt"></i></div>
+                    <div><strong>Pinch</strong> your thumb and index finger to start drawing</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon"><i class="fas fa-pencil-alt"></i></div>
+                    <div>Trace the letter displayed on the screen</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-icon"><i class="fas fa-star"></i></div>
+                    <div>Score high accuracy to win stars!</div>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="closeModal()">Let's Start!</button>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL (Hidden by default) -->
+    <div id="success-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-title">Excellent! 🎉</h2>
+            <div id="modal-stars" style="font-size: 2rem; color: #f59e0b; margin: 15px 0;">⭐⭐⭐</div>
+            <p id="modal-score" style="font-size: 1.2rem; font-weight: bold; color: var(--text-dark);">Accuracy: 95%</p>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button onclick="window.location.reload()" class="action-btn" style="background: #f3f4f6;">Try
+                    Again</button>
+                <button onclick="window.history.back()" class="action-btn btn-submit">Finish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA PASSING -->
+    <script>
+        const CURRENT_LETTER_ID = "{{ letter_id }}";
+
+        function closeModal() {
+            document.getElementById('instruction-modal').classList.add('hidden');
+        }
+
+        // Mock Live Score for "Dummy Data" request if JS isn't fully active
+        // Real implementation handles this in main.js
+        setTimeout(() => {
+            // This is just to demonstrate functionality as requested
+            // Ideally main.js drives this.
+        }, 2000);
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

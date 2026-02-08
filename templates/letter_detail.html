@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartyBee - අකුරු විස්තරය</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: white;
+            border: 2px solid #FFC107;
+            color: #FF9800;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: #FFF8E1;
+            transform: translateX(-5px);
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-char {
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            font-size: 10rem;
+            font-weight: 800;
+            color: #FF9800;
+            line-height: 1;
+            margin: 20px 0;
+            text-shadow: 4px 4px 0px rgba(255, 193, 7, 0.2);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .letter-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin: 20px 0;
+            border-radius: 20px;
+            background: #FFF8E1;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .words-section {
+            margin-top: 40px;
+        }
+
+        .words-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .words-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .word-pill {
+            background: #FFC107;
+            color: #000;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .word-pill:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btns {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-practice {
+            background: linear-gradient(135deg, #FFC107, #FF9800);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-practice:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 152, 0, 0.4);
+        }
+
+        @media (max-width: 600px) {
+            .main-char {
+                font-size: 6rem;
+            }
+
+            .word-pill {
+                font-size: 1.1rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="login-page">
+
+    <!-- ================= LOADING SCREEN ================= -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" class="pulsing-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <div class="detail-container" data-letter-id="{{ letter_id }}">
+        <div class="header-section">
+            <a href="/learn" class="back-btn">
+                <i class="fas fa-arrow-left"></i> ආපසු
+            </a>
+            <div class="logo-section" style="margin-bottom: 0;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SmartyBee" width="50">
+            </div>
+        </div>
+
+        <div id="detail-card" class="detail-card bounce-in">
+            <!-- Content will be loaded here -->
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        const letterId = parseInt(document.querySelector('.detail-container').dataset.letterId) || 0;
+
+        /* ---------- LOADING SCREEN ---------- */
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("loading-screen");
+            setTimeout(() => {
+                loader.style.opacity = "0";
+                setTimeout(() => loader.style.display = "none", 500);
+            }, 1000);
+        });
+
+        /* ---------- LOAD LETTER DETAILS ---------- */
+        async function loadDetails() {
+            const card = document.getElementById('detail-card');
+
+            try {
+                const response = await fetch(`/api/letters/${letterId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const letter = data.letter;
+                    const wordsHtml = letter.ExampleWords.map(word => `<div class="word-pill">${word}</div>`).join('');
+
+                    // Display letter image if available
+                    const imageHtml = letter.ImageURL ? `<img src="${letter.ImageURL}" alt="${letter.SinhalaChar}" class="letter-image" onerror="this.style.display='none'">` : '';
+
+                    card.innerHTML = `
+                        <div class="main-char">${letter.SinhalaChar}</div>
+                        ${imageHtml}
+                        
+                        <div class="words-section">
+                            <h2 class="words-title">උදාහරණ වචන</h2>
+                            <div class="words-grid">
+                                ${wordsHtml}
+                            </div>
+                        </div>
+
+                        <div class="action-btns">
+                            <a href="/dashboard?letter=${letter.SinhalaChar}" class="btn-practice">
+                                <i class="fas fa-pen-nib"></i> ලියන්න පුරුදු වෙමු
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = '<p>තොරතුරු ලබා ගැනීමට නොහැකි විය.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading details:', error);
+                card.innerHTML = '<p>සර්වර් දෝෂයකි.</p>';
+            }
+        }
+
+        loadDetails();
+    </script>
+</body>
+
+</html>

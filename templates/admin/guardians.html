@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Guardians Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Guardian Management</h1>
+    <p style="color: #64748b; margin-top: 5px;">View and manage registered guardian accounts.</p>
+</div>
+
+<div class="glass-card">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 2px solid #f1f5f9;">
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">ID</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Username</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Children</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Joined Date</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in guardians %}
+            <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(245, 158, 11, 0.05)'"
+                onmouseout="this.style.background='transparent'">
+                <td style="padding: 15px; font-weight: 600; color: #1e293b;">#{{ g.UserID }}</td>
+                <td style="padding: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div
+                            style="width: 35px; height: 35px; background: #e0f2fe; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #0ea5e9;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <span style="font-weight: 500;">{{ g.Username }}</span>
+                    </div>
+                </td>
+                <td style="padding: 15px;">
+                    <span
+                        style="background: #f0fdf4; color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                        {{ g.child_count }} Kids
+                    </span>
+                </td>
+                <td style="padding: 15px; color: #64748b; font-size: 0.9rem;">
+                    {{ g.CreatedAt.strftime('%Y-%m-%d') if g.CreatedAt else 'N/A' }}
+                </td>
+                <td style="padding: 15px;">
+                    <button class="btn" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">
+                        <i class="fas fa-eye"></i> Details
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not guardians %}
+            <tr>
+                <td colspan="5" style="padding: 40px; text-align: center; color: #94a3b8;">
+                    No guardians found in the system.
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

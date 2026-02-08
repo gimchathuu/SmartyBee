@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Curriculum Management{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title">Curriculum Manager</h1>
+        <p style="color: #64748b; margin-top: 5px;">Manage Sinhala characters and difficulty levels.</p>
+    </div>
+    <button class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Character
+    </button>
+</div>
+
+<div class="glass-card">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 2px solid #f1f5f9;">
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Char</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Difficulty</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Level</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Stroke Path</th>
+                <th style="padding: 15px; color: #64748b; font-weight: 600;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in letters %}
+            <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
+                onmouseover="this.style.background='rgba(245, 158, 11, 0.05)'"
+                onmouseout="this.style.background='transparent'">
+                <td style="padding: 15px;">
+                    <div style="font-size: 2rem; font-weight: 700; color: #1e293b;">
+                        {{ l.SinhalaChar }}
+                    </div>
+                </td>
+                <td style="padding: 15px;">
+                    {% set diff_color = '#3b82f6' %}
+                    {% if l.DifficultyLevel == 'Medium' %}{% set diff_color = '#10b981' %}{% endif %}
+                    {% if l.DifficultyLevel == 'Hard' %}{% set diff_color = '#f59e0b' %}{% endif %}
+                    <span
+                        style="color: {{ diff_color }}; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">
+                        {{ l.DifficultyLevel }}
+                    </span>
+                </td>
+                <td style="padding: 15px;">
+                    <div style="font-weight: 600; color: #64748b;">Tier {{ l.Level }}</div>
+                </td>
+                <td style="padding: 15px;">
+                    <code
+                        style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; color: #475569;">
+                        {{ 'Valid' if l.StrokePathJSON else 'Missing' }}
+                    </code>
+                </td>
+                <td style="padding: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn"
+                            style="background: #f1f5f9; color: #64748b; font-size: 0.8rem; padding: 6px 12px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn"
+                            style="background: #fef2f2; color: #ef4444; font-size: 0.8rem; padding: 6px 12px;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not letters %}
+            <tr>
+                <td colspan="5" style="padding: 40px; text-align: center; color: #94a3b8;">
+                    Curriculum is currently empty.
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
