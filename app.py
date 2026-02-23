@@ -149,6 +149,9 @@ def guardian_signup_logic():
     if not username or not fullname or not password:
         return jsonify({"success": False, "message": "All fields are required"})
     
+    if len(password) < 6:
+        return jsonify({"success": False, "message": "Password must be at least 6 characters long"})
+    
     conn = get_db_connection()
     if not conn:
         return jsonify({"success": False, "message": "Database connection failed"})
@@ -822,7 +825,7 @@ def submit_attempt():
         template_path = [{'x': 0.5, 'y': 0.2}, {'x': 0.5, 'y': 0.8}]
 
     # 2. Calculate Score
-    score = calculate_score(user_path, template_path)
+    score, error_indices = calculate_score(user_path, template_path)
     stars = calculate_stars(score)
     
     # 3. Save Session if logged in
@@ -830,7 +833,12 @@ def submit_attempt():
     if child_id:
         save_session(child_id, letter_id, score, stars)
 
-    return jsonify({"success": True, "score": score, "stars": stars})
+    return jsonify({
+        "success": True, 
+        "score": score, 
+        "stars": stars,
+        "error_indices": error_indices
+    })
 
 @app.route('/api/assign-letter', methods=['POST'])
 @login_required

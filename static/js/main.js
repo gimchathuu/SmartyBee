@@ -7,6 +7,8 @@ const statusText = document.getElementById('status-text');
 let isWriting = false;
 let pathPoints = []; // Stores {x, y} normalized coordinates
 let lastPoint = null;
+let showingFeedback = false;
+let feedbackErrors = null;
 
 // MediaPipe Setup
 function onResults(results) {
@@ -191,6 +193,8 @@ videoElement.addEventListener('loadeddata', () => {
 // ----------------------
 
 document.getElementById('clear-btn').addEventListener('click', () => {
+    showingFeedback = false;
+    feedbackErrors = null;
     pathPoints = [];
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 });
@@ -220,7 +224,28 @@ async function submitAttempt() {
         const result = await response.json();
 
         console.log("Score:", result.score);
+
         showResultModal(result.score);
+
+        // Draw Feedback Path if error indices are present
+        if (result.error_indices) {
+            showingFeedback = true;
+            feedbackErrors = result.error_indices;
+
+            // Get Modal Canvas
+            const feedbackCanvas = document.getElementById('feedback_canvas');
+
+            // Wait for modal to render (microtask) or just force it
+            // Since we just removed 'hidden' in showResultModal, the layout should update.
+            // Ensure canvas resolution matches display size correctly
+            if (feedbackCanvas) {
+                feedbackCanvas.width = feedbackCanvas.offsetWidth;
+                feedbackCanvas.height = feedbackCanvas.offsetHeight;
+
+                const fCtx = feedbackCanvas.getContext('2d');
+                drawFeedbackPath(pathPoints, feedbackErrors, fCtx, feedbackCanvas.width, feedbackCanvas.height);
+            }
+        }
 
     } catch (error) {
         console.error("Error submitting path:", error);
@@ -257,4 +282,65 @@ function showResultModal(score) {
     else if (stars === 2) title.innerText = "Great Job! 🎉";
     else if (stars === 1) title.innerText = "Good Try! 👍";
     else title.innerText = "Keep Practicing! 💪";
+}
+
+function drawFeedbackPath(points, errorIndices, targetCtx, width, height) {
+    if (!points || points.length < 2) return;
+
+    const ctx = targetCtx || canvasCtx;
+    const w = width || canvasElement.width;
+    const h = height || canvasElement.height;
+
+    // Clear canvas for feedback redraw
+    ctx.clearRect(0, 0, w, h);
+
+    // Convert errorIndices set/array to a Set for O(1) lookup
+    const errorSet = new Set(errorIndices || []);
+
+    ctx.lineWidth = 8; // Slightly thinner for modal check
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Draw segment by segment
+    for (let i = 0; i < points.length - 1; i++) {
+        ctx.beginPath();
+        // Since points are normalized [0,1], we multiply by new dimensions
+        // BUT we need to handle aspect ratio if the modal canvas is different shape?
+        // For now, simple stretch to fit is likely fine for feedback, or we keep it simple.
+        ctx.moveTo(points[i].x * w, points[i].y * h);
+        ctx.lineTo(points[i + 1].x * w, points[i + 1].y * h);
+
+        // Color Logic
+        // If either start or end point of segment is an error, color it RED
+        if (errorSet.has(i) || errorSet.has(i + 1)) {
+            ctx.strokeStyle = '#ff0000'; // Red for Error
+            ctx.shadowColor = '#ff4444';
+            ctx.shadowBlur = 5;
+        } else {
+            ctx.strokeStyle = '#00ff00'; // Green for Correct
+            ctx.shadowColor = '#44ff44';
+            ctx.shadowBlur = 5;
+        }
+
+        ctx.stroke();
+    }
+}
+
+function resetGame() {
+    document.getElementById('success-modal').classList.add('hidden');
+    showingFeedback = false;
+    feedbackErrors = null;
+    pathPoints = [];
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+    // Clear Feedback Canvas
+    const feedbackCanvas = document.getElementById('feedback_canvas');
+    if (feedbackCanvas) {
+        const fCtx = feedbackCanvas.getContext('2d');
+        fCtx.clearRect(0, 0, feedbackCanvas.width, feedbackCanvas.height);
+    }
+
+    document.getElementById('status-text').innerText = "Start writing...";
+    document.getElementById('live-score').innerText = "0%";
+    document.getElementById('accuracy-bar').style.width = "0%";
 }

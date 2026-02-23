@@ -58,7 +58,7 @@
                 <div class="input-group">
                     <label for="password"><i class="fas fa-lock"></i> Password</label>
                     <div class="password-container">
-                        <input type="password" id="password" placeholder="........" required>
+                        <input type="password" id="password" placeholder="At least 6 characters" required minlength="6">
                         <i class="far fa-eye toggle-password" onclick="togglePassword('password')"></i>
                     </div>
                 </div>
@@ -67,7 +67,8 @@
                 <div class="input-group">
                     <label for="confirm-password"><i class="fas fa-lock"></i> Confirm Password</label>
                     <div class="password-container">
-                        <input type="password" id="confirm-password" placeholder="........" required>
+                        <input type="password" id="confirm-password" placeholder="At least 6 characters" required
+                            minlength="6">
                         <i class="far fa-eye toggle-password" onclick="togglePassword('confirm-password')"></i>
                     </div>
                 </div>
@@ -141,8 +142,8 @@
                 return;
             }
 
-            if (password.length < 3) {
-                errorMsg.innerText = "Password must be at least 3 characters!";
+            if (password.length < 6) {
+                errorMsg.innerText = "Password must be at least 6 characters!";
                 return;
             }
 

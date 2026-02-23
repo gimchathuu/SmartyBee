@@ -29,38 +29,42 @@ def normalize_path(path):
 
 def calculate_score(user_path_json, template_path_json):
     """
-    Calculates similarity score between user path and template.
-    Returns: Float (0.0 to 100.0)
+    Calculates similarity score and identifies error segments.
+    Returns: (score, error_indices)
     """
     try:
         user_seq = normalize_path(user_path_json)
         template_seq = normalize_path(template_path_json)
         
         if len(user_seq) == 0 or len(template_seq) == 0:
-            return 0.0
+            return 0.0, []
 
         # Dynamic Time Warping
         # fastdtw returns (distance, path)
-        distance, _ = fastdtw(user_seq, template_seq, dist=euclidean)
+        distance, path = fastdtw(user_seq, template_seq, dist=euclidean)
         
-        # Normalize distance relative to complexity (length of path)
-        # Average distance per point
-        # Note: Depending on implementation, distance is the sum of euclidean distances of aligned points.
-        # Max reasonable distance (if completely wrong) is ~2.0 per point (top-left to bottom-right in 1x1 box is sqrt(2) * 2 roughly).
+        # Calculate error indices
+        # Identify user points that are too far from their matched template point
+        ERROR_THRESHOLD = 0.15 # Normalized distance threshold (0.0 - 1.0 box)
+        error_indices = set()
         
+        for u_idx, t_idx in path:
+            dist = euclidean(user_seq[u_idx], template_seq[t_idx])
+            if dist > ERROR_THRESHOLD:
+                error_indices.add(int(u_idx)) # Convert numpy int to standard int for JSON serializing
+        
+        # Normalize distance relative to complexity
         path_len = len(user_seq) + len(template_seq)
         avg_dist = distance / path_len
-        
-        # Heuristic mapping to 0-100 Score
-        # If avg_dist is 0.0 -> Perfect -> 100
-        # If avg_dist is > 0.5 -> Poor -> 0
         
         # Tune this weight: Higher means stricter
         WEIGHT = 200 
         
         score = 100 - (avg_dist * WEIGHT)
-        return max(0.0, min(100.0, score))
+        final_score = max(0.0, min(100.0, score))
+        
+        return final_score, list(error_indices)
         
     except Exception as e:
         print(f"Scoring Error: {e}")
-        return 0.0
+        return 0.0, []

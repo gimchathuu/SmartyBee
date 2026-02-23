@@ -35,11 +35,7 @@
                     </div>
                 </td>
                 <td style="padding: 15px;">
-                    {% set diff_color = '#3b82f6' %}
-                    {% if l.DifficultyLevel == 'Medium' %}{% set diff_color = '#10b981' %}{% endif %}
-                    {% if l.DifficultyLevel == 'Hard' %}{% set diff_color = '#f59e0b' %}{% endif %}
-                    <span
-                        style="color: {{ diff_color }}; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">
+                    <span class="diff-badge diff-{{ l.DifficultyLevel|lower }}">
                         {{ l.DifficultyLevel }}
                     </span>
                 </td>
