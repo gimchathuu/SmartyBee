@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="si">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinhala AI - Recognition Tester</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+Sinhala:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --glass: rgba(255, 255, 255, 0.7);
+            --bg: #f3f4f6;
+            --green: #10b981;
+            --red: #ef4444;
+            --orange: #f59e0b;
+        }
+
+        body {
+            font-family: 'Fredoka', 'Noto Sans Sinhala', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1e1b4b;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .header p {
+            color: #4338ca;
+            font-weight: 500;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .canvas-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .target-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .target-selector label {
+            font-weight: 600;
+            color: #1e1b4b;
+            font-size: 0.95rem;
+        }
+
+        .target-selector select {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 2px solid #e0e7ff;
+            font-family: inherit;
+            font-size: 1.1rem;
+            background: white;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .target-selector select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        #drawing-canvas {
+            background: #1e1b4b;
+            border-radius: 16px;
+            cursor: crosshair;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.3);
+            touch-action: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-clear {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .btn-predict {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results-card {
+            flex: 1;
+            min-width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .results-card h2 {
+            margin-top: 0;
+            color: #1e1b4b;
+            border-bottom: 2px solid #e0e7ff;
+            padding-bottom: 10px;
+        }
+
+        .prediction-box {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #e0e7ff;
+            transition: border-color 0.3s;
+        }
+
+        .prediction-box.correct {
+            border-color: var(--green);
+            background: #ecfdf5;
+        }
+
+        .prediction-box.wrong {
+            border-color: var(--red);
+            background: #fef2f2;
+        }
+
+        .prediction-box.uncertain {
+            border-color: var(--orange);
+            background: #fffbeb;
+        }
+
+        .predicted-char {
+            font-size: 5rem;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .confidence-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .confidence-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .confidence-high { color: var(--green); }
+        .confidence-mid { color: var(--orange); }
+        .confidence-low { color: var(--red); }
+
+        .validation-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-allowed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-blocked {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-rejected {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .validation-reason {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .method-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: #e0e7ff;
+            color: var(--primary);
+            margin-top: 8px;
+        }
+
+        .probability-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .prob-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .prob-item.highlight {
+            background: #eef2ff;
+            border-radius: 8px;
+            padding: 4px 6px;
+            margin-left: -6px;
+            margin-right: -6px;
+        }
+
+        .prob-label {
+            width: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .prob-bar-container {
+            flex: 1;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .prob-bar {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .prob-bar.top {
+            background: var(--primary);
+        }
+
+        .prob-value {
+            width: 45px;
+            font-size: 0.8rem;
+            text-align: right;
+            color: #6b7280;
+        }
+
+        .legend {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .legend-item:hover {
+            border-color: var(--primary);
+            background: #eef2ff;
+        }
+
+        .legend-item.active {
+            border-color: var(--primary);
+            background: #e0e7ff;
+            font-weight: 700;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e0e7ff;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-chip {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .chip-confident {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .chip-not-confident {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Sinhala AI Tester</h1>
+        <p>Draw a Sinhala letter below to see the ML model in action!</p>
+    </div>
+
+    <div class="main-container">
+        <!-- Canvas Area -->
+        <div class="canvas-card">
+            <div class="target-selector">
+                <label for="target-letter"><i class="fas fa-bullseye"></i> Target:</label>
+                <select id="target-letter">
+                    <option value="">None (free mode)</option>
+                    <option value="ක">ක</option>
+                    <option value="ග">ග</option>
+                    <option value="ට">ට</option>
+                    <option value="ත">ත</option>
+                    <option value="න">න</option>
+                    <option value="ප">ප</option>
+                    <option value="බ">බ</option>
+                    <option value="ම">ම</option>
+                    <option value="ය">ය</option>
+                    <option value="ර">ර</option>
+                    <option value="ල">ල</option>
+                    <option value="ව">ව</option>
+                    <option value="හ">හ</option>
+                    <option value="ෆ">ෆ</option>
+                </select>
+            </div>
+            <canvas id="drawing-canvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button class="btn btn-clear" id="clear-btn">
+                    <i class="fas fa-trash"></i> Reset
+                </button>
+                <button class="btn btn-predict" id="predict-btn">
+                    <i class="fas fa-magic"></i> Recognize
+                </button>
+            </div>
+            <p style="font-size: 0.8rem; color: #6366f1; margin-top: 15px;">
+                <i class="fas fa-info-circle"></i> Use large, clear strokes. Select a target letter to test gatekeeper validation.
+            </p>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-card">
+            <h2><i class="fas fa-chart-bar"></i> AI Analysis</h2>
+
+            <div id="no-result" style="text-align: center; padding: 40px; color: #9ca3af;">
+                <i class="fas fa-brain" style="font-size: 3rem; opacity: 0.3;"></i>
+                <p>Waiting for your drawing...</p>
+            </div>
+
+            <div id="result-display" style="display: none;">
+                <div class="prediction-box" id="prediction-box">
+                    <div class="confidence-label">PREDICTED LETTER</div>
+                    <div class="predicted-char" id="predicted-char">?</div>
+                    <div class="confidence-label">CONFIDENCE</div>
+                    <div class="confidence-value" id="confidence-value">0%</div>
+                    <div class="status-bar" id="status-bar"></div>
+                    <div id="validation-display"></div>
+                </div>
+
+                <h3>Model Probabilities</h3>
+                <div class="probability-list" id="prob-list">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3 style="margin-top:0">Classes the AI knows (14 letters) <span style="font-size:0.8rem; color:#6b7280;">— click to set as target</span></h3>
+        <div class="legend-grid" id="legend-grid">
+            <div class="legend-item" data-letter="ක">ක <small>(12)</small></div>
+            <div class="legend-item" data-letter="ග">ග <small>(25)</small></div>
+            <div class="legend-item" data-letter="ට">ට <small>(64)</small></div>
+            <div class="legend-item" data-letter="ත">ත <small>(93)</small></div>
+            <div class="legend-item" data-letter="න">න <small>(120)</small></div>
+            <div class="legend-item" data-letter="ප">ප <small>(134)</small></div>
+            <div class="legend-item" data-letter="බ">බ <small>(149)</small></div>
+            <div class="legend-item" data-letter="ම">ම <small>(164)</small></div>
+            <div class="legend-item" data-letter="ය">ය <small>(179)</small></div>
+            <div class="legend-item" data-letter="ර">ර <small>(190)</small></div>
+            <div class="legend-item" data-letter="ල">ල <small>(198)</small></div>
+            <div class="legend-item" data-letter="ව">ව <small>(208)</small></div>
+            <div class="legend-item" data-letter="හ">හ <small>(264)</small></div>
+            <div class="legend-item" data-letter="ෆ">ෆ <small>(282)</small></div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-weight: 600; color: var(--primary);">Analyzing strokes...</p>
+    </div>
+
+    <!-- ================= POPUP MODAL ================= -->
+    <div id="popup-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:20px; padding:30px 35px; max-width:400px; width:90%; text-align:center; animation: popIn 0.3s ease; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div id="popup-icon" style="font-size:3rem; margin-bottom:10px;">⚠️</div>
+            <h2 id="popup-title" style="margin:0 0 10px 0; font-family:'Fredoka',sans-serif; color:#ef4444;">Error</h2>
+            <p id="popup-message" style="color:#555; font-size:1rem; margin-bottom:20px; line-height:1.5;"></p>
+            <button onclick="closePopup()" style="background:var(--primary); color:white; border:none; padding:12px 40px; border-radius:50px; font-size:1rem; font-weight:600; cursor:pointer; font-family:'Fredoka',sans-serif; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">OK</button>
+        </div>
+    </div>
+    <style>
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+
+    <script>
+        function showPopup(title, message, isSuccess = false) {
+            document.getElementById('popup-icon').innerText = isSuccess ? '✅' : '⚠️';
+            document.getElementById('popup-title').innerText = title;
+            document.getElementById('popup-title').style.color = isSuccess ? '#10b981' : '#ef4444';
+            document.getElementById('popup-message').innerText = message;
+            document.getElementById('popup-modal').style.display = 'flex';
+        }
+        function closePopup() {
+            document.getElementById('popup-modal').style.display = 'none';
+        }
+
+        const canvas = document.getElementById('drawing-canvas');
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('clear-btn');
+        const predictBtn = document.getElementById('predict-btn');
+        const targetSelect = document.getElementById('target-letter');
+        const loader = document.getElementById('loader');
+
+        let isDrawing = false;
+        let points = [];
+        let strokeStartTime = null;
+
+        // Canvas setup
+        ctx.lineWidth = 12;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#ffffff';
+
+        // Folder ID ↔ Sinhala character map
+        const SINHALA_CHAR_MAP = {
+            "12": "ක", "25": "ග", "64": "ට", "93": "ත", "120": "න",
+            "134": "ප", "149": "බ", "164": "ම", "179": "ය", "190": "ර",
+            "198": "ල", "208": "ව", "264": "හ", "282": "ෆ"
+        };
+
+        // Legend items → target selector sync
+        document.querySelectorAll('.legend-item[data-letter]').forEach(item => {
+            item.addEventListener('click', () => {
+                const letter = item.dataset.letter;
+                targetSelect.value = letter;
+                updateLegendHighlight();
+            });
+        });
+
+        targetSelect.addEventListener('change', updateLegendHighlight);
+
+        function updateLegendHighlight() {
+            const selected = targetSelect.value;
+            document.querySelectorAll('.legend-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.letter === selected);
+            });
+        }
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            return {
+                x: (clientX - rect.left) / rect.width,
+                y: (clientY - rect.top) / rect.height
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            if (!strokeStartTime) strokeStartTime = Date.now();
+            const c = getCoords(e);
+            ctx.beginPath();
+            ctx.moveTo(c.x * canvas.width, c.y * canvas.height);
+            points.push({ x: c.x, y: c.y, t: Date.now() - strokeStartTime });
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const c = getCoords(e);
+            ctx.lineTo(c.x * canvas.width, c.y * canvas.height);
+            ctx.stroke();
+            points.push({ x: c.x, y: c.y, t: Date.now() - strokeStartTime });
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        clearBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            points = [];
+            strokeStartTime = null;
+            document.getElementById('result-display').style.display = 'none';
+            document.getElementById('no-result').style.display = 'block';
+        });
+
+        predictBtn.addEventListener('click', async () => {
+            if (points.length < 5) return;
+
+            loader.style.display = 'flex';
+            try {
+                const targetLetter = targetSelect.value || undefined;
+                const payload = { path: points };
+                if (targetLetter) payload.target_letter = targetLetter;
+
+                const response = await fetch('/api/recognize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showResults(data);
+                } else {
+                    showPopup('Recognition Failed', data.error || 'Unknown error occurred');
+                }
+            } catch (err) {
+                console.error(err);
+                showPopup('Server Error', 'Server error. Check if backend is running.');
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function showResults(data) {
+            document.getElementById('no-result').style.display = 'none';
+            document.getElementById('result-display').style.display = 'block';
+
+            // Use the letter directly from response, fallback to char map
+            const predictedLetter = data.letter || SINHALA_CHAR_MAP[data.letter_id] || data.letter_id || '?';
+            document.getElementById('predicted-char').innerText = predictedLetter;
+
+            // Confidence with color coding
+            const conf = data.confidence || 0;
+            const confEl = document.getElementById('confidence-value');
+            confEl.innerText = (conf * 100).toFixed(1) + '%';
+            confEl.className = 'confidence-value ' + (conf >= 0.5 ? 'confidence-high' : conf >= 0.2 ? 'confidence-mid' : 'confidence-low');
+
+            // Prediction box styling based on validation
+            const predBox = document.getElementById('prediction-box');
+            predBox.className = 'prediction-box';
+
+            // Status chips (method + confident flag)
+            const statusBar = document.getElementById('status-bar');
+            statusBar.innerHTML = '';
+
+            if (data.method) {
+                const methodChip = document.createElement('span');
+                methodChip.className = 'method-tag';
+                methodChip.innerText = data.method.toUpperCase();
+                statusBar.appendChild(methodChip);
+            }
+
+            if (typeof data.is_confident !== 'undefined') {
+                const confChip = document.createElement('span');
+                confChip.className = 'status-chip ' + (data.is_confident ? 'chip-confident' : 'chip-not-confident');
+                confChip.innerText = data.is_confident ? 'CONFIDENT' : 'LOW CONFIDENCE';
+                statusBar.appendChild(confChip);
+            }
+
+            // Validation / gatekeeper display
+            const valDisplay = document.getElementById('validation-display');
+            valDisplay.innerHTML = '';
+
+            if (data.validation) {
+                const v = data.validation;
+
+                if (v.action === 'allow' || v.allowed) {
+                    predBox.classList.add('correct');
+                    const badge = document.createElement('div');
+                    badge.className = 'validation-badge badge-allowed';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> ALLOWED';
+                    valDisplay.appendChild(badge);
+                } else if (v.action === 'reject') {
+                    predBox.classList.add('uncertain');
+                    const badge = document.createElement('div');
+                    badge.className = 'validation-badge badge-rejected';
+                    badge.innerHTML = '<i class="fas fa-question-circle"></i> REJECTED';
+                    valDisplay.appendChild(badge);
+                } else {
+                    predBox.classList.add('wrong');
+                    const badge = document.createElement('div');
+                    badge.className = 'validation-badge badge-blocked';
+                    badge.innerHTML = '<i class="fas fa-times-circle"></i> BLOCKED';
+                    valDisplay.appendChild(badge);
+                }
+
+                if (v.reason) {
+                    const reason = document.createElement('div');
+                    reason.className = 'validation-reason';
+                    reason.innerText = v.reason;
+                    valDisplay.appendChild(reason);
+                }
+
+                if (v.target_letter && v.predicted_letter && v.target_letter !== v.predicted_letter) {
+                    const info = document.createElement('div');
+                    info.style.cssText = 'font-size:0.85rem;margin-top:6px;color:#4b5563;';
+                    info.innerHTML = `Expected: <strong>${v.target_letter}</strong> &nbsp;|&nbsp; Got: <strong>${v.predicted_letter}</strong>`;
+                    valDisplay.appendChild(info);
+                }
+            }
+
+            // Probabilities
+            const probList = document.getElementById('prob-list');
+            probList.innerHTML = '';
+
+            if (data.all_probabilities) {
+                const sortedProbs = Object.entries(data.all_probabilities)
+                    .sort((a, b) => b[1] - a[1]);
+
+                const topId = sortedProbs.length > 0 ? sortedProbs[0][0] : null;
+
+                for (const [id, prob] of sortedProbs) {
+                    const charLabel = SINHALA_CHAR_MAP[id] || id;
+                    const isTop = (id === topId);
+                    const item = document.createElement('div');
+                    item.className = 'prob-item' + (isTop ? ' highlight' : '');
+                    item.innerHTML = `
+                        <div class="prob-label">${charLabel}</div>
+                        <div class="prob-bar-container">
+                            <div class="prob-bar${isTop ? ' top' : ''}" style="width: ${prob * 100}%"></div>
+                        </div>
+                        <div class="prob-value">${(prob * 100).toFixed(1)}%</div>
+                    `;
+                    probList.appendChild(item);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -193,8 +193,31 @@
         </div>
     </div>
 
+    <!-- ================= POPUP MODAL ================= -->
+    <div id="popup-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:20px; padding:30px 35px; max-width:400px; width:90%; text-align:center; animation: popIn 0.3s ease; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div id="popup-icon" style="font-size:3rem; margin-bottom:10px;">⚠️</div>
+            <h2 id="popup-title" style="margin:0 0 10px 0; font-family:'Fredoka',sans-serif; color:#ef4444;">Error</h2>
+            <p id="popup-message" style="color:#555; font-size:1rem; margin-bottom:20px; line-height:1.5;"></p>
+            <button onclick="closePopup()" style="background:linear-gradient(135deg,#FFC107,#FF9800); color:white; border:none; padding:12px 40px; border-radius:50px; font-size:1rem; font-weight:600; cursor:pointer; font-family:'Fredoka',sans-serif; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">OK</button>
+        </div>
+    </div>
+    <style>
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+
     <script>
         const letterId = parseInt(document.querySelector('.detail-container').dataset.letterId) || 0;
+
+        function showPopup(title, message) {
+            document.getElementById('popup-icon').innerText = '⚠️';
+            document.getElementById('popup-title').innerText = title;
+            document.getElementById('popup-message').innerText = message;
+            document.getElementById('popup-modal').style.display = 'flex';
+        }
+        function closePopup() {
+            document.getElementById('popup-modal').style.display = 'none';
+        }
 
         /* ---------- LOADING SCREEN ---------- */
         window.addEventListener("load", () => {
@@ -238,11 +261,13 @@
                         </div>
                     `;
                 } else {
-                    card.innerHTML = '<p>තොරතුරු ලබා ගැනීමට නොහැකි විය.</p>';
+                    card.innerHTML = '<p style="text-align:center;color:#999;">Letter not found</p>';
+                    showPopup('Loading Failed', 'තොරතුරු ලබා ගැනීමට නොහැකි විය.');
                 }
             } catch (error) {
                 console.error('Error loading details:', error);
-                card.innerHTML = '<p>සර්වර් දෝෂයකි.</p>';
+                card.innerHTML = '<p style="text-align:center;color:#999;">Error loading</p>';
+                showPopup('Server Error', 'සර්වර් දෝෂයකි.');
             }
         }
 

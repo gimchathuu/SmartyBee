@@ -1,0 +1,12 @@
+{
+  "letter_id": "23",
+  "timestamp": 1772311336868,
+  "num_points": 174,
+  "score": 83.8,
+  "stars": 4,
+  "feedback_level": "good",
+  "input_mode": "camera",
+  "predicted_id": 134,
+  "confidence": 0.8186,
+  "gatekeeper_allowed": true
+}

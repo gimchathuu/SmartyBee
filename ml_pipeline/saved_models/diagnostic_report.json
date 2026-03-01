@@ -1,0 +1,18 @@
+{
+  "feature_collapse": {
+    "passed": true,
+    "unique_classes": 14,
+    "dominance": 0.0952,
+    "test_samples": 42,
+    "summary": "14 unique classes from 42 real validation images"
+  },
+  "confidence_calibration": {
+    "passed": true,
+    "blank_max_conf": 0.546,
+    "temperature": 1.2835
+  },
+  "model_health": "HEALTHY",
+  "val_accuracy": 95.83,
+  "test_accuracy": 96.13,
+  "timestamp": "2026-03-01 01:36:11"
+}

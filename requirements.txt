@@ -3,3 +3,14 @@ mysql-connector-python
 numpy
 scipy
 fastdtw
+scikit-image
+tslearn
+werkzeug
+
+# ML Pipeline (for model training & inference)
+torch
+torchvision
+Pillow
+scikit-learn
+matplotlib
+seaborn

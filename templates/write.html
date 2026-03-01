@@ -10,13 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- MediaPipe Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+    <!-- MediaPipe Dependencies (pinned versions) -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"
         crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6.1629159505/control_utils.js"
         crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"
+        crossorigin="anonymous"></script>
 
     <style>
         :root {
@@ -242,7 +244,7 @@
         .action-btn {
             flex: 1;
             padding: 12px;
-            border: none;
+            border: 2px solid transparent;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
@@ -251,6 +253,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-sizing: border-box;
             transition: transform 0.1s;
         }
 
@@ -354,6 +357,95 @@
         .start-btn:hover {
             background: #d97706;
         }
+
+        /* Draw Mode Toggle */
+        .mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+            display: flex;
+            gap: 5px;
+        }
+
+        .mode-btn {
+            padding: 8px 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-orange);
+            border-color: var(--primary-orange);
+        }
+
+        .mode-btn:hover {
+            background: rgba(245, 158, 11, 0.7);
+        }
+
+        /* Mouse drawing cursor */
+        .video-section.draw-mode {
+            cursor: crosshair;
+        }
+
+        .video-section.draw-mode #output_canvas {
+            pointer-events: auto;
+            transform: none;
+            /* Remove mirror for draw mode */
+        }
+
+        .video-section.draw-mode #input_video {
+            display: none;
+        }
+
+        /* Error banner */
+        .error-banner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            text-align: center;
+            z-index: 15;
+            max-width: 80%;
+        }
+
+        .error-banner.hidden {
+            display: none;
+        }
+
+        .error-banner h3 {
+            margin: 0 0 10px 0;
+            color: #f59e0b;
+        }
+
+        .error-banner p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #d1d5db;
+        }
+
+        .error-banner button {
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+        }
     </style>
 </head>
 
@@ -368,8 +460,8 @@
             <div class="game-title">Writing Practice: <span style="color: var(--primary-orange);">{{ letter_char
                     }}</span></div>
         </div>
-        <div style="font-weight: 600; color: var(--text-light);">
-            <i class="fas fa-video"></i> Camera On
+        <div id="header-mode-label" style="font-weight: 600; color: var(--text-light);">
+            <i class="fas fa-video"></i> Camera Mode
         </div>
     </header>
 
@@ -377,13 +469,37 @@
     <div class="game-container">
 
         <!-- VIDEO AREA -->
-        <div class="video-section">
+        <div id="video-section" class="video-section">
             <div class="video-wrapper">
                 <video id="input_video" autoplay playsinline></video>
                 <canvas id="output_canvas"></canvas>
-                <div id="gesture-indicator" class="gesture-hint">
-                    <i class="fas fa-hand-pointer"></i>
-                    <span>Pinch thumb & index finger to draw!</span>
+                <div id="gesture-indicator" style="
+                    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+                    background: #22c55e; color: white; padding: 6px 16px;
+                    border-radius: 20px; font-size: 1rem; font-weight: bold;
+                    opacity: 0; transition: opacity 0.3s; z-index: 10; pointer-events: none;">
+                </div>
+                <div id="gesture-hint" class="gesture-hint">
+                    <i class="fas fa-hand-paper"></i>
+                    <span>Open hand to start, Index finger to draw, Fist to submit!</span>
+                </div>
+                <!-- Mode toggle buttons -->
+                <div class="mode-toggle">
+                    <button id="mode-camera" class="mode-btn active" onclick="switchMode('camera')">
+                        <i class="fas fa-video"></i> Camera
+                    </button>
+                    <button id="mode-draw" class="mode-btn" onclick="switchMode('draw')">
+                        <i class="fas fa-pencil-alt"></i> Draw
+                    </button>
+                </div>
+                <!-- Error banner for camera failures -->
+                <div id="camera-error" class="error-banner hidden">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Camera not available</h3>
+                    <p>Could not access camera or load hand tracking.</p>
+                    <p>You can still draw with your mouse or touchscreen!</p>
+                    <button
+                        onclick="switchMode('draw'); document.getElementById('camera-error').classList.add('hidden');">Use
+                        Draw Mode</button>
                 </div>
             </div>
         </div>
@@ -423,20 +539,22 @@
     <div id="instruction-modal" class="modal">
         <div class="modal-content">
             <h2 style="color: var(--text-dark); margin-bottom: 10px;">How to Play 🎮</h2>
-            <p style="color: var(--text-light);">Follow these simple steps to learn writing!</p>
+            <p style="color: var(--text-light);">Choose how you want to write!</p>
 
             <div class="step-list">
                 <div class="step-item">
-                    <div class="step-icon"><i class="fas fa-hand-paper"></i></div>
-                    <div>Show your hand to the camera</div>
+                    <div class="step-icon"><i class="fas fa-video"></i></div>
+                    <div><strong>Camera Mode:</strong> Show an <strong>open hand</strong> (✋) to get ready, draw with
+                        your <strong>index finger</strong> (☝️), make a <strong>fist</strong> (✊) to submit</div>
                 </div>
                 <div class="step-item">
-                    <div class="step-icon"><i class="fas fa-compress-arrows-alt"></i></div>
-                    <div><strong>Pinch</strong> your thumb and index finger to start drawing</div>
+                    <div class="step-icon"><i class="fas fa-mouse-pointer"></i></div>
+                    <div><strong>Draw Mode:</strong> Click the <strong>Draw</strong> button (top-right) and use your
+                        mouse or touchscreen</div>
                 </div>
                 <div class="step-item">
                     <div class="step-icon"><i class="fas fa-pencil-alt"></i></div>
-                    <div>Trace the letter displayed on the screen</div>
+                    <div>Trace the letter displayed on the right side</div>
                 </div>
                 <div class="step-item">
                     <div class="step-icon"><i class="fas fa-star"></i></div>
@@ -452,21 +570,119 @@
     <div id="success-modal" class="modal hidden">
         <div class="modal-content">
             <h2 id="modal-title">Excellent! 🎉</h2>
-            <div id="modal-stars" style="font-size: 2rem; color: #f59e0b; margin: 15px 0;">⭐⭐⭐</div>
+            <div id="modal-stars" style="font-size: 2.5rem; color: #f59e0b; margin: 15px 0;"></div>
+
+            <!-- Child-friendly message (no raw percentages) -->
+            <p id="result-message"
+                style="font-size: 1.1rem; color: var(--text-dark); margin: 10px 0; font-weight: 600;"></p>
+
+            <!-- Wrong letter comparison (only visible when blocked with wrong_letter) -->
+            <div id="letter-comparison"
+                style="display:none; align-items:center; justify-content:center; gap:20px; margin-top:16px;">
+                <div style="text-align:center;">
+                    <div style="font-size:0.85rem; color:#6b7280;">You wrote</div>
+                    <div id="written-letter" style="font-size:3rem; color:#ef4444;"></div>
+                </div>
+                <div style="font-size:2rem;">→</div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.85rem; color:#6b7280;">Practice this</div>
+                    <div id="target-letter-display" style="font-size:3rem; color:#22c55e;"></div>
+                </div>
+            </div>
 
             <!-- Feedback Canvas Container -->
             <div
                 style="width: 100%; height: 200px; background: #f9fafb; border-radius: 12px; margin-bottom: 15px; position: relative; border: 2px dashed #e5e7eb; display: flex; align-items: center; justify-content: center;">
                 <canvas id="feedback_canvas"
-                    style="width: 100%; height: 100%; object-fit: contain; -webkit-transform: scaleX(-1); -moz-transform: scaleX(-1); transform: scaleX(-1);"></canvas>
+                    style="width: 100%; height: 100%; object-fit: contain;"></canvas>
             </div>
 
-            <p id="modal-score" style="font-size: 1.2rem; font-weight: bold; color: var(--text-dark);">Accuracy: 95%</p>
+            <!-- Error Type Legend -->
+            <div
+                style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 10px; font-size: 0.75rem;">
+                <span style="display:flex;align-items:center;gap:4px;"><span
+                        style="width:12px;height:12px;background:#00ff00;border-radius:50%;display:inline-block;"></span>
+                    Correct</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span
+                        style="width:12px;height:12px;background:#ff0000;border-radius:50%;display:inline-block;"></span>
+                    Error</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span
+                        style="width:12px;height:12px;background:#ff00ff;border-radius:50%;display:inline-block;"></span>
+                    Wrong Start</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span
+                        style="width:12px;height:12px;background:#ffaa00;border-radius:50%;display:inline-block;"></span>
+                    Wrong Direction</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span
+                        style="width:12px;height:12px;background:#ff6600;border-radius:50%;display:inline-block;"></span>
+                    Extra Stroke</span>
+            </div>
+
+            <!-- Score explicitly shown to the user as requested -->
+            <p id="modal-score"
+                style="display:block; font-size: 1.2rem; font-weight: 700; color: #db2777; margin: 10px 0;">Score: 95%
+            </p>
+
+            <!-- Correction Guidance -->
+            <div id="correction-guidance"
+                style="display: none; margin: 12px 0; padding: 12px; background: #f0fdf4; border-radius: 10px; border-left: 4px solid #22c55e; text-align: left;">
+                <div style="font-weight: 700; font-size: 0.85rem; color: #166534; margin-bottom: 6px;">💡 Guidance</div>
+                <ul id="guidance-list"
+                    style="margin: 0; padding-left: 18px; font-size: 0.85rem; color: #15803d; list-style: none;"></ul>
+            </div>
+
+            <!-- Algorithm Score Breakdown (collapsed by default for children) -->
+            <details id="score-breakdown-details" style="margin: 10px 0;">
+                <summary style="cursor:pointer; font-size:0.8rem; color:#9ca3af;">Show Details</summary>
+                <div id="score-breakdown" style="margin-top: 8px;"></div>
+            </details>
+
+            <style>
+                .breakdown-grid {
+                    display: grid;
+                    grid-template-columns: repeat(5, 1fr);
+                    gap: 8px;
+                    margin: 10px 0;
+                }
+
+                .breakdown-item {
+                    background: #f3f4f6;
+                    padding: 8px;
+                    border-radius: 8px;
+                    text-align: center;
+                }
+
+                .breakdown-label {
+                    display: block;
+                    font-size: 0.65rem;
+                    color: #6b7280;
+                    margin-bottom: 2px;
+                }
+
+                .breakdown-value {
+                    display: block;
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    color: #111827;
+                }
+            </style>
+
             <div class="btn-group" style="margin-top: 20px;">
                 <button onclick="resetGame()" class="action-btn" style="background: #f3f4f6;">Try
-                    Again</button>
-                <button onclick="window.history.back()" class="action-btn btn-submit">Finish</button>
+                    Again 🔄</button>
+                <button onclick="window.history.back()" class="action-btn btn-submit">Home 🏠</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ERROR POPUP MODAL -->
+    <div id="error-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 420px;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
+            <h2 id="error-modal-title" style="color: #ef4444; margin-bottom: 10px;">Error</h2>
+            <p id="error-modal-message"
+                style="margin: 15px 0; color: var(--text-dark); font-size: 0.95rem; line-height: 1.5;"></p>
+            <button onclick="document.getElementById('error-modal').classList.add('hidden')" class="start-btn"
+                style="background: #ef4444; margin-top: 10px;">OK</button>
         </div>
     </div>
 

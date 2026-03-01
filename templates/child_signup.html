@@ -89,11 +89,24 @@
                 <a href="{{ url_for('child_login') }}" style="color: #fdcb6e; font-weight: bold;">Login here</a>
             </p>
 
-            <p id="error-msg" class="error-text" style="margin-top: 15px; margin-bottom: 0;"></p>
-            <p id="success-msg" class="success-text" style="margin-top: 15px; margin-bottom: 0; color: #00b894;"></p>
+            <p id="error-msg" class="error-text" style="display:none;"></p>
+            <p id="success-msg" class="success-text" style="display:none;"></p>
 
         </div>
     </div>
+
+    <!-- ================= POPUP MODAL ================= -->
+    <div id="popup-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; border-radius:20px; padding:30px 35px; max-width:400px; width:90%; text-align:center; animation: popIn 0.3s ease; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div id="popup-icon" style="font-size:3rem; margin-bottom:10px;">⚠️</div>
+            <h2 id="popup-title" style="margin:0 0 10px 0; font-family:'Fredoka',sans-serif; color:#333;">Error</h2>
+            <p id="popup-message" style="color:#555; font-size:1rem; margin-bottom:20px; line-height:1.5;"></p>
+            <button onclick="closePopup()" style="background:linear-gradient(135deg,#FFC107,#FF9800); color:white; border:none; padding:12px 40px; border-radius:50px; font-size:1rem; font-weight:600; cursor:pointer; font-family:'Fredoka',sans-serif; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">OK</button>
+        </div>
+    </div>
+    <style>
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
 
     <!-- ================= SCRIPT ================= -->
     <script>
@@ -121,6 +134,18 @@
             }
         }
 
+        /* ---------- POPUP FUNCTIONS ---------- */
+        function showPopup(title, message, isSuccess = false) {
+            document.getElementById('popup-icon').innerText = isSuccess ? '✅' : '⚠️';
+            document.getElementById('popup-title').innerText = title;
+            document.getElementById('popup-title').style.color = isSuccess ? '#00b894' : '#ef4444';
+            document.getElementById('popup-message').innerText = message;
+            document.getElementById('popup-modal').style.display = 'flex';
+        }
+        function closePopup() {
+            document.getElementById('popup-modal').style.display = 'none';
+        }
+
         /* ---------- SIGNUP HANDLER ---------- */
         async function handleSignup(event) {
             event.preventDefault();
@@ -130,30 +155,25 @@
             const age = parseInt(document.getElementById("age").value);
             const password = document.getElementById("password").value.trim();
             const confirmPassword = document.getElementById("confirm-password").value.trim();
-            const errorMsg = document.getElementById("error-msg");
-            const successMsg = document.getElementById("success-msg");
-
-            errorMsg.innerText = "";
-            successMsg.innerText = "";
 
             // Validation
             if (!username || !childname || !age || !password || !confirmPassword) {
-                errorMsg.innerText = "Please fill in all fields!";
+                showPopup('Missing Fields', 'Please fill in all fields!');
                 return;
             }
 
             if (age < 3 || age > 12) {
-                errorMsg.innerText = "Age must be between 3 and 12!";
+                showPopup('Invalid Age', 'Age must be between 3 and 12!');
                 return;
             }
 
             if (password !== confirmPassword) {
-                errorMsg.innerText = "Passwords do not match!";
+                showPopup('Password Mismatch', 'Passwords do not match!');
                 return;
             }
 
             if (password.length < 3) {
-                errorMsg.innerText = "Password must be at least 3 characters!";
+                showPopup('Weak Password', 'Password must be at least 3 characters!');
                 return;
             }
 
@@ -174,16 +194,16 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    successMsg.innerText = "🎉 Account created! Taking you to login...";
+                    showPopup('Success!', '🎉 Account created! Taking you to login...', true);
                     setTimeout(() => {
                         window.location.href = "/child-login";
                     }, 2000);
                 } else {
-                    errorMsg.innerText = result.message || "Registration failed!";
+                    showPopup('Registration Failed', result.message || 'Registration failed!');
                 }
 
             } catch (error) {
-                errorMsg.innerText = "Server error. Please try again!";
+                showPopup('Server Error', 'Server error. Please try again!');
             }
         }
     </script>
